@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌎 Dashboard LATAM - Alpha Method</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, sans-serif; background: #0a0a0a; color: #fff; padding: 20px; min-height: 100vh; }
+        .container { max-width: 1600px; margin: 0 auto; }
+        
+        .header { background: linear-gradient(135deg, #1a1a1a 0%, #2d0000 100%); border: 2px solid #cc0000; border-radius: 12px; padding: 30px; margin-bottom: 30px; box-shadow: 0 0 30px rgba(204, 0, 0, 0.3); }
+        .title { font-size: 32px; font-weight: 900; color: #ff3333; margin-bottom: 8px; text-shadow: 0 0 20px rgba(255, 51, 51, 0.5); }
+        .subtitle { color: #ccc; font-size: 14px; }
+        
+        .online-badge { background: linear-gradient(135deg, #1a1a1a 0%, #001a00 100%); border: 2px solid #00ff00; border-radius: 12px; padding: 20px; margin-bottom: 30px; text-align: center; box-shadow: 0 0 30px rgba(0, 255, 0, 0.3); }
+        .online-label { color: #999; font-size: 12px; text-transform: uppercase; margin-bottom: 8px; }
+        .online-count { font-size: 48px; font-weight: 900; color: #00ff00; animation: pulse 2s ease-in-out infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
+        
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px; }
+        .stat-card { background: rgba(204, 0, 0, 0.15); border: 2px solid #cc0000; border-radius: 12px; padding: 20px; text-align: center; transition: all 0.3s; }
+        .stat-card:hover { border-color: #ff3333; box-shadow: 0 0 20px rgba(204, 0, 0, 0.5); }
+        .stat-label { font-size: 11px; color: #999; text-transform: uppercase; margin-bottom: 10px; font-weight: 700; }
+        .stat-value { font-size: 36px; font-weight: 900; color: #ff3333; }
+        .stat-percent { font-size: 13px; color: #00ff00; margin-top: 5px; font-weight: 700; }
+        
+        .section { background: linear-gradient(135deg, #1a1a1a 0%, #2d0000 100%); border: 2px solid #cc0000; border-radius: 12px; padding: 25px; margin-bottom: 30px; }
+        .section-title { color: #ff3333; font-size: 18px; font-weight: 900; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 1px; }
+        
+        .country-row { display: flex; justify-content: space-between; align-items: center; padding: 15px; background: rgba(0,0,0,0.5); border-radius: 8px; margin-bottom: 10px; border: 1px solid #333; transition: all 0.3s; }
+        .country-row:hover { border-color: #00ff00; background: rgba(0, 255, 0, 0.05); }
+        .country-name { font-size: 24px; font-weight: 700; }
+        .country-stats { display: flex; gap: 30px; font-size: 14px; }
+        .country-value { font-weight: 900; color: #00ff00; }
+        
+        /* SPY FEED */
+        .spy-container { max-height: 600px; overflow-y: auto; padding: 10px; background: rgba(0, 0, 0, 0.5); border-radius: 12px; }
+        .spy-item { display: flex; align-items: center; gap: 15px; padding: 15px; background: rgba(255, 255, 255, 0.05); border-radius: 10px; margin-bottom: 10px; border: 1px solid #333; transition: all 0.3s; }
+        .spy-item:hover { border-color: #00ff00; background: rgba(0, 255, 0, 0.05); }
+        .spy-avatar { font-size: 32px; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; background: rgba(0, 0, 0, 0.5); border-radius: 50%; }
+        .spy-content { flex: 1; }
+        .spy-header { display: flex; justify-content: space-between; margin-bottom: 5px; }
+        .spy-id { color: #ff3333; font-weight: 900; font-size: 13px; }
+        .spy-time { color: #666; font-size: 11px; }
+        .spy-status { color: #ccc; font-size: 13px; }
+        .spy-badges { display: flex; gap: 8px; margin-top: 8px; }
+        .online-dot { width: 8px; height: 8px; background: #00ff00; border-radius: 50%; animation: pulse 2s infinite; }
+        .checkout-badge { background: #fbbf24; color: #000; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 900; }
+        .sale-badge { background: #00ff00; color: #000; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 900; }
+        
+        .empty-state { text-align: center; padding: 60px 20px; color: #666; }
+        .loading-spinner { width: 40px; height: 40px; border: 4px solid rgba(204, 0, 0, 0.2); border-top-color: #cc0000; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 20px; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.3); }
+        ::-webkit-scrollbar-thumb { background: #cc0000; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="title">🌎 ALPHA METHOD - LATAM Dashboard</div>
+            <div class="subtitle">Monitoreo en Tiempo Real - América Latina</div>
+        </div>
+
+        <div class="online-badge">
+            <div class="online-label">👥 Online Ahora (LATAM)</div>
+            <div class="online-count" id="online-now">0</div>
+        </div>
+
+        <div class="section">
+            <div class="section-title">📊 Métricas Generales LATAM</div>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-label">Total Accesos</div>
+                    <div class="stat-value" id="total">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Inició Quiz</div>
+                    <div class="stat-value" id="started">0</div>
+                    <div class="stat-percent" id="started-pct">0%</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Completó Quiz</div>
+                    <div class="stat-value" id="completed">0</div>
+                    <div class="stat-percent" id="completed-pct">0%</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Vio Resultado</div>
+                    <div class="stat-value" id="result">0</div>
+                    <div class="stat-percent" id="result-pct">0%</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Checkout</div>
+                    <div class="stat-value" id="checkout">0</div>
+                    <div class="stat-percent" id="checkout-pct">0%</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">💰 Ventas</div>
+                    <div class="stat-value" id="sales">0</div>
+                    <div class="stat-percent" id="conversion">0%</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-title">💰 Financiero (USD)</div>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-label">Ingresos Brutos</div>
+                    <div class="stat-value" id="revenue" style="font-size: 28px;">$0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Tasas (15%)</div>
+                    <div class="stat-value" id="fees" style="font-size: 28px; color: #ef4444;">-$0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Ingresos Netos</div>
+                    <div class="stat-value" id="net" style="font-size: 28px; color: #00ff00;">$0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Ticket Promedio</div>
+                    <div class="stat-value" id="ticket" style="font-size: 28px;">$0</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-title">🌎 Desglose por País</div>
+            <div class="country-row">
+                <div class="country-name">🇲🇽 México</div>
+                <div class="country-stats">
+                    <div>Accesos: <span class="country-value" id="mx-visits">0</span></div>
+                    <div>Ventas: <span class="country-value" id="mx-sales">0</span></div>
+                    <div>Conv: <span class="country-value" id="mx-conv">0%</span></div>
+                    <div>USD: <span class="country-value" id="mx-revenue">$0</span></div>
+                </div>
+            </div>
+            <div class="country-row">
+                <div class="country-name">🇨🇴 Colombia</div>
+                <div class="country-stats">
+                    <div>Accesos: <span class="country-value" id="co-visits">0</span></div>
+                    <div>Ventas: <span class="country-value" id="co-sales">0</span></div>
+                    <div>Conv: <span class="country-value" id="co-conv">0%</span></div>
+                    <div>USD: <span class="country-value" id="co-revenue">$0</span></div>
+                </div>
+            </div>
+            <div class="country-row">
+                <div class="country-name">🇦🇷 Argentina</div>
+                <div class="country-stats">
+                    <div>Accesos: <span class="country-value" id="ar-visits">0</span></div>
+                    <div>Ventas: <span class="country-value" id="ar-sales">0</span></div>
+                    <div>Conv: <span class="country-value" id="ar-conv">0%</span></div>
+                    <div>USD: <span class="country-value" id="ar-revenue">$0</span></div>
+                </div>
+            </div>
+            <div class="country-row">
+                <div class="country-name">🇵🇪 Perú</div>
+                <div class="country-stats">
+                    <div>Accesos: <span class="country-value" id="pe-visits">0</span></div>
+                    <div>Ventas: <span class="country-value" id="pe-sales">0</span></div>
+                    <div>Conv: <span class="country-value" id="pe-conv">0%</span></div>
+                    <div>USD: <span class="country-value" id="pe-revenue">$0</span></div>
+                </div>
+            </div>
+            <div class="country-row">
+                <div class="country-name">🇨🇱 Chile</div>
+                <div class="country-stats">
+                    <div>Accesos: <span class="country-value" id="cl-visits">0</span></div>
+                    <div>Ventas: <span class="country-value" id="cl-sales">0</span></div>
+                    <div>Conv: <span class="country-value" id="cl-conv">0%</span></div>
+                    <div>USD: <span class="country-value" id="cl-revenue">$0</span></div>
+                </div>
+            </div>
+            <div class="country-row">
+                <div class="country-name">🌎 Otros Países</div>
+                <div class="country-stats">
+                    <div>Accesos: <span class="country-value" id="other-visits">0</span></div>
+                    <div>Ventas: <span class="country-value" id="other-sales">0</span></div>
+                    <div>Conv: <span class="country-value" id="other-conv">0%</span></div>
+                    <div>USD: <span class="country-value" id="other-revenue">$0</span></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-title">🔴 Espía en Vivo - LATAM</div>
+            <div class="spy-container" id="spy-feed">
+                <div class="empty-state">
+                    <div class="loading-spinner"></div>
+                    <div>Esperando leads de LATAM...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getFirestore, collection, query, where, onSnapshot, orderBy } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+        const app = initializeApp({
+            apiKey: "AIzaSyB-GPkmK_iNQuu_96NsWBEmnZA1LhiSRR4",
+            authDomain: "alytics-metodo-alpha.firebaseapp.com",
+            projectId: "alytics-metodo-alpha",
+            storageBucket: "alytics-metodo-alpha.firebasestorage.app",
+            messagingSenderId: "389989039442",
+            appId: "1:389989039442:web:e897945ffbfe52da210e8b"
+        });
+
+        const db = getFirestore(app);
+        let allSessions = [];
+        let allSales = [];
+
+        // Query sessions LATAM
+        const sessionsQuery = query(
+            collection(db, 'sessions'),
+            orderBy('enteredAt', 'desc')
+        );
+
+        const salesQuery = query(
+            collection(db, 'sales'),
+            orderBy('createdAt', 'desc')
+        );
+
+        onSnapshot(sessionsQuery, (snapshot) => {
+            allSessions = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+                .filter(s => s.source === 'tiktok_latam' || s.source === 'latam');
+            updateStats();
+            updateSpyFeed();
+        });
+
+        onSnapshot(salesQuery, (snapshot) => {
+            allSales = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+                .filter(s => (s.source === 'latam' || s.source === 'tiktok_latam') && s.isPaid === true);
+            updateSalesStats();
+        });
+
+        function isOnline(lastActivity) {
+            if (!lastActivity) return false;
+            const now = Date.now();
+            const lastTime = lastActivity.toMillis ? lastActivity.toMillis() : lastActivity;
+            return (now - lastTime) < 300000; // 5 min
+        }
+
+        function updateStats() {
+            const total = allSessions.length;
+            const started = allSessions.filter(s => s.events?.quiz_started).length;
+            const completed = allSessions.filter(s => s.events?.quiz_completed).length;
+            const result = allSessions.filter(s => s.events?.result_shown).length;
+            const checkout = allSessions.filter(s => s.conversion?.clickedCheckout).length;
+            const online = allSessions.filter(s => isOnline(s.lastActivity)).length;
+            
+            document.getElementById('online-now').textContent = online;
+            document.getElementById('total').textContent = total;
+            document.getElementById('started').textContent = started;
+            document.getElementById('started-pct').textContent = total > 0 ? Math.round((started / total) * 100) + '%' : '0%';
+            document.getElementById('completed').textContent = completed;
+            document.getElementById('completed-pct').textContent = total > 0 ? Math.round((completed / total) * 100) + '%' : '0%';
+            document.getElementById('result').textContent = result;
+            document.getElementById('result-pct').textContent = total > 0 ? Math.round((result / total) * 100) + '%' : '0%';
+            document.getElementById('checkout').textContent = checkout;
+            document.getElementById('checkout-pct').textContent = total > 0 ? Math.round((checkout / total) * 100) + '%' : '0%';
+            
+            // Por país
+            const countries = {
+                MX: { visits: 0, sales: 0, revenue: 0 },
+                CO: { visits: 0, sales: 0, revenue: 0 },
+                AR: { visits: 0, sales: 0, revenue: 0 },
+                PE: { visits: 0, sales: 0, revenue: 0 },
+                CL: { visits: 0, sales: 0, revenue: 0 },
+                OTHER: { visits: 0, sales: 0, revenue: 0 }
+            };
+            
+            allSessions.forEach(s => {
+                const country = s.country || 'OTHER';
+                if (countries[country]) {
+                    countries[country].visits++;
+                } else {
+                    countries.OTHER.visits++;
+                }
+            });
+
+            allSales.forEach(s => {
+                const country = s.country || 'OTHER';
+                const amount = s.amount || 0;
+                if (countries[country]) {
+                    countries[country].sales++;
+                    countries[country].revenue += amount;
+                } else {
+                    countries.OTHER.sales++;
+                    countries.OTHER.revenue += amount;
+                }
+            });
+            
+            Object.keys(countries).forEach(code => {
+                const prefix = code.toLowerCase();
+                const data = countries[code];
+                const conv = data.visits > 0 ? ((data.sales / data.visits) * 100).toFixed(1) : '0.0';
+                
+                document.getElementById(`${prefix}-visits`).textContent = data.visits;
+                document.getElementById(`${prefix}-sales`).textContent = data.sales;
+                document.getElementById(`${prefix}-conv`).textContent = conv + '%';
+                document.getElementById(`${prefix}-revenue`).textContent = '$' + data.revenue.toFixed(2);
+            });
+        }
+
+        function updateSalesStats() {
+            const totalSales = allSales.length;
+            const revenue = allSales.reduce((sum, s) => sum + (s.amount || 0), 0);
+            const fees = revenue * 0.15;
+            const net = revenue - fees;
+            const ticket = totalSales > 0 ? net / totalSales : 0;
+            
+            const totalVisits = allSessions.length || 1;
+            const conversion = (totalSales / totalVisits) * 100;
+            
+            document.getElementById('sales').textContent = totalSales;
+            document.getElementById('conversion').textContent = conversion.toFixed(1) + '%';
+            document.getElementById('revenue').textContent = '$' + revenue.toFixed(2);
+            document.getElementById('fees').textContent = '-$' + fees.toFixed(2);
+            document.getElementById('net').textContent = '$' + net.toFixed(2);
+            document.getElementById('ticket').textContent = '$' + ticket.toFixed(2);
+        }
+
+        function updateSpyFeed() {
+            const container = document.getElementById('spy-feed');
+            
+            if (allSessions.length === 0) {
+                container.innerHTML = '<div class="empty-state"><div class="loading-spinner"></div><div>Esperando leads de LATAM...</div></div>';
+                return;
+            }
+            
+            const sorted = [...allSessions].sort((a, b) => {
+                const timeA = a.lastActivity?.toMillis ? a.lastActivity.toMillis() : 0;
+                const timeB = b.lastActivity?.toMillis ? b.lastActivity.toMillis() : 0;
+                return timeB - timeA;
+            }).slice(0, 30);
+            
+            container.innerHTML = sorted.map(s => {
+                const flag = getFlag(s.country);
+                const sid = (s.sessionId || s.id).substr(-6).toUpperCase();
+                const status = getStatus(s);
+                const online = isOnline(s.lastActivity);
+                const sale = allSales.find(sale => sale.sessionId === s.sessionId);
+                const isCheckout = s.conversion?.clickedCheckout && !sale;
+                
+                return `
+                    <div class="spy-item">
+                        <div class="spy-avatar">${flag}</div>
+                        <div class="spy-content">
+                            <div class="spy-header">
+                                <div class="spy-id">Lead #${sid}</div>
+                                <div class="spy-time">${formatTimeAgo(s.enteredAt)}</div>
+                            </div>
+                            <div class="spy-status">${status}</div>
+                            <div class="spy-badges">
+                                ${online && !sale ? '<div class="online-dot"></div>' : ''}
+                                ${isCheckout ? '<div class="checkout-badge">CHECKOUT</div>' : ''}
+                                ${sale ? '<div class="sale-badge">$' + (sale.amount || 0).toFixed(2) + '</div>' : ''}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function getFlag(country) {
+            const flags = {
+                'MX': '🇲🇽', 'CO': '🇨🇴', 'AR': '🇦🇷',
+                'PE': '🇵🇪', 'CL': '🇨🇱', 'VE': '🇻🇪',
+                'EC': '🇪🇨', 'UY': '🇺🇾', 'PY': '🇵🇾',
+                'BO': '🇧🇴', 'GT': '🇬🇹', 'HN': '🇭🇳',
+                'SV': '🇸🇻', 'NI': '🇳🇮', 'CR': '🇨🇷',
+                'PA': '🇵🇦', 'DO': '🇩🇴', 'CU': '🇨🇺'
+            };
+            return flags[country] || '🌎';
+        }
+
+        function getStatus(s) {
+            const events = s.events || {};
+            if (events.checkout) return '💳 Clicó en CHECKOUT';
+            if (events.result_shown) return '🎉 Vio su resultado';
+            if (events.quiz_completed) return '✅ Completó quiz (' + (s.quizProgress || 0) + '/8)';
+            if (events.quiz_started) return '📝 Respondiendo quiz...';
+            return '📱 Viendo página';
+        }
+
+        function formatTimeAgo(timestamp) {
+            if (!timestamp) return 'hace un momento';
+            const time = timestamp.toMillis ? timestamp.toMillis() : timestamp;
+            const seconds = Math.floor((Date.now() - time) / 1000);
+            
+            if (seconds < 60) return 'hace ' + seconds + 's';
+            const minutes = Math.floor(seconds / 60);
+            if (minutes < 60) return 'hace ' + minutes + 'm';
+            const hours = Math.floor(minutes / 60);
+            return 'hace ' + hours + 'h';
+        }
+
+        // Auto refresh cada 10s
+        setInterval(() => {
+            updateStats();
+            updateSalesStats();
+        }, 10000);
+    </script>
+</body>
+</html>
