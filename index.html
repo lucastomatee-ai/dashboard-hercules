@@ -3,411 +3,836 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🌎 Dashboard LATAM - Protocolo Hercules</title>
+    <title>⚡ Protocolo Hercules — Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@700;800;900&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
     <style>
+        :root {
+            --bg: #060608;
+            --surface: #0e0e12;
+            --surface2: #14141a;
+            --border: #1e1e28;
+            --red: #ff2d4e;
+            --red-dim: rgba(255, 45, 78, 0.12);
+            --green: #00e5a0;
+            --green-dim: rgba(0, 229, 160, 0.10);
+            --yellow: #ffc940;
+            --yellow-dim: rgba(255, 201, 64, 0.12);
+            --blue: #4d9fff;
+            --text: #e8e8f0;
+            --muted: #5a5a72;
+            --font-head: 'Syne', sans-serif;
+            --font-mono: 'Space Mono', monospace;
+        }
+
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: -apple-system, sans-serif; background: #0a0a0a; color: #fff; padding: 20px; min-height: 100vh; }
-        .container { max-width: 1600px; margin: 0 auto; }
-        
-        .header { background: linear-gradient(135deg, #1a1a1a 0%, #2d0000 100%); border: 2px solid #cc0000; border-radius: 12px; padding: 30px; margin-bottom: 30px; box-shadow: 0 0 30px rgba(204, 0, 0, 0.3); }
-        .title { font-size: 32px; font-weight: 900; color: #ff3333; margin-bottom: 8px; text-shadow: 0 0 20px rgba(255, 51, 51, 0.5); }
-        .subtitle { color: #ccc; font-size: 14px; }
-        
-        .online-badge { background: linear-gradient(135deg, #1a1a1a 0%, #001a00 100%); border: 2px solid #00ff00; border-radius: 12px; padding: 20px; margin-bottom: 30px; text-align: center; box-shadow: 0 0 30px rgba(0, 255, 0, 0.3); }
-        .online-label { color: #999; font-size: 12px; text-transform: uppercase; margin-bottom: 8px; }
-        .online-count { font-size: 48px; font-weight: 900; color: #00ff00; animation: pulse 2s ease-in-out infinite; }
-        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
-        
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px; }
-        .stat-card { background: rgba(204, 0, 0, 0.15); border: 2px solid #cc0000; border-radius: 12px; padding: 20px; text-align: center; transition: all 0.3s; }
-        .stat-card:hover { border-color: #ff3333; box-shadow: 0 0 20px rgba(204, 0, 0, 0.5); }
-        .stat-label { font-size: 11px; color: #999; text-transform: uppercase; margin-bottom: 10px; font-weight: 700; }
-        .stat-value { font-size: 36px; font-weight: 900; color: #ff3333; }
-        .stat-percent { font-size: 13px; color: #00ff00; margin-top: 5px; font-weight: 700; }
-        
-        .section { background: linear-gradient(135deg, #1a1a1a 0%, #2d0000 100%); border: 2px solid #cc0000; border-radius: 12px; padding: 25px; margin-bottom: 30px; }
-        .section-title { color: #ff3333; font-size: 18px; font-weight: 900; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 1px; }
-        
-        .country-row { display: flex; justify-content: space-between; align-items: center; padding: 15px; background: rgba(0,0,0,0.5); border-radius: 8px; margin-bottom: 10px; border: 1px solid #333; transition: all 0.3s; }
-        .country-row:hover { border-color: #00ff00; background: rgba(0, 255, 0, 0.05); }
-        .country-name { font-size: 24px; font-weight: 700; }
-        .country-stats { display: flex; gap: 30px; font-size: 14px; }
-        .country-value { font-weight: 900; color: #00ff00; }
-        
-        /* SPY FEED */
-        .spy-container { max-height: 600px; overflow-y: auto; padding: 10px; background: rgba(0, 0, 0, 0.5); border-radius: 12px; }
-        .spy-item { display: flex; align-items: center; gap: 15px; padding: 15px; background: rgba(255, 255, 255, 0.05); border-radius: 10px; margin-bottom: 10px; border: 1px solid #333; transition: all 0.3s; }
-        .spy-item:hover { border-color: #00ff00; background: rgba(0, 255, 0, 0.05); }
-        .spy-avatar { font-size: 32px; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; background: rgba(0, 0, 0, 0.5); border-radius: 50%; }
-        .spy-content { flex: 1; }
-        .spy-header { display: flex; justify-content: space-between; margin-bottom: 5px; }
-        .spy-id { color: #ff3333; font-weight: 900; font-size: 13px; }
-        .spy-time { color: #666; font-size: 11px; }
-        .spy-status { color: #ccc; font-size: 13px; }
-        .spy-badges { display: flex; gap: 8px; margin-top: 8px; }
-        .online-dot { width: 8px; height: 8px; background: #00ff00; border-radius: 50%; animation: pulse 2s infinite; }
-        .checkout-badge { background: #fbbf24; color: #000; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 900; }
-        .sale-badge { background: #00ff00; color: #000; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 900; }
-        
-        .empty-state { text-align: center; padding: 60px 20px; color: #666; }
-        .loading-spinner { width: 40px; height: 40px; border: 4px solid rgba(204, 0, 0, 0.2); border-top-color: #cc0000; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 20px; }
+
+        body {
+            font-family: var(--font-mono);
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            padding: 24px;
+        }
+
+        /* Scanline subtle overlay */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .wrap { max-width: 1600px; margin: 0 auto; position: relative; z-index: 1; }
+
+        /* ── HEADER ── */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 28px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border);
+        }
+        .logo-area { display: flex; align-items: center; gap: 14px; }
+        .logo-icon {
+            width: 44px; height: 44px;
+            background: var(--red);
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 22px;
+            box-shadow: 0 0 20px rgba(255, 45, 78, 0.4);
+        }
+        .logo-text { font-family: var(--font-head); font-size: 22px; font-weight: 900; color: #fff; }
+        .logo-sub { font-size: 10px; color: var(--muted); letter-spacing: 2px; text-transform: uppercase; margin-top: 2px; }
+
+        .header-right { display: flex; align-items: center; gap: 16px; }
+        .live-pill {
+            display: flex; align-items: center; gap: 8px;
+            background: var(--green-dim);
+            border: 1px solid rgba(0, 229, 160, 0.3);
+            border-radius: 100px;
+            padding: 8px 16px;
+            font-size: 12px; font-weight: 700; color: var(--green);
+            letter-spacing: 1px;
+        }
+        .live-dot {
+            width: 7px; height: 7px;
+            background: var(--green); border-radius: 50%;
+            animation: blink 1.4s ease-in-out infinite;
+        }
+        @keyframes blink { 0%,100%{opacity:1;box-shadow:0 0 6px var(--green);} 50%{opacity:0.4;box-shadow:none;} }
+
+        .online-hero {
+            text-align: right;
+        }
+        .online-num {
+            font-family: var(--font-head);
+            font-size: 36px; font-weight: 900;
+            color: var(--green);
+            text-shadow: 0 0 20px rgba(0, 229, 160, 0.5);
+            line-height: 1;
+        }
+        .online-label { font-size: 10px; color: var(--muted); letter-spacing: 2px; text-transform: uppercase; }
+
+        /* ── GRID LAYOUT ── */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            grid-template-rows: auto;
+            gap: 16px;
+        }
+
+        /* ── CARD ── */
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--red), transparent);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .card:hover::before { opacity: 1; }
+
+        .card-title {
+            font-family: var(--font-head);
+            font-size: 11px; font-weight: 700;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 14px;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .card-title .dot {
+            width: 6px; height: 6px; border-radius: 50%;
+        }
+
+        /* ── KPI ROW ── */
+        .kpi-row {
+            grid-column: 1 / -1;
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 12px;
+        }
+
+        .kpi {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px 18px;
+            position: relative;
+            overflow: hidden;
+            transition: border-color 0.3s;
+        }
+        .kpi:hover { border-color: var(--red); }
+
+        .kpi-label { font-size: 10px; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 8px; }
+        .kpi-val {
+            font-family: var(--font-head);
+            font-size: 32px; font-weight: 900; line-height: 1;
+            color: #fff;
+        }
+        .kpi-pct {
+            font-size: 11px; font-weight: 700;
+            margin-top: 5px;
+        }
+        .kpi-pct.green { color: var(--green); }
+        .kpi-pct.red { color: var(--red); }
+        .kpi-pct.yellow { color: var(--yellow); }
+        .kpi-glow { position: absolute; top: -10px; right: -10px; width: 60px; height: 60px; border-radius: 50%; opacity: 0.08; }
+
+        /* ── FUNNEL ── */
+        .funnel-card { grid-column: 1 / 2; }
+
+        .funnel-step {
+            display: flex; align-items: center; gap: 12px;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border);
+            cursor: default;
+            transition: background 0.2s;
+            border-radius: 8px;
+            padding: 10px 8px;
+        }
+        .funnel-step:last-child { border-bottom: none; }
+
+        .funnel-step-num {
+            font-size: 10px; color: var(--muted);
+            width: 14px; text-align: center; flex-shrink: 0;
+        }
+
+        .funnel-step-info { flex: 1; min-width: 0; }
+        .funnel-step-name { font-size: 12px; font-weight: 700; color: var(--text); margin-bottom: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+        .funnel-bar-track { height: 5px; background: var(--border); border-radius: 10px; overflow: hidden; }
+        .funnel-bar-fill { height: 100%; border-radius: 10px; transition: width 0.8s ease; }
+
+        .funnel-right { text-align: right; flex-shrink: 0; }
+        .funnel-count { font-family: var(--font-head); font-size: 18px; font-weight: 800; color: #fff; }
+        .funnel-pct { font-size: 10px; color: var(--muted); }
+
+        .funnel-drop {
+            font-size: 10px; font-weight: 700;
+            padding: 2px 7px; border-radius: 20px;
+            margin-left: 8px; flex-shrink: 0;
+        }
+        .drop-bad { background: rgba(255, 45, 78, 0.15); color: var(--red); }
+        .drop-ok  { background: rgba(255, 201, 64, 0.15); color: var(--yellow); }
+        .drop-good{ background: rgba(0, 229, 160, 0.15); color: var(--green); }
+
+        /* ── CHART ── */
+        .chart-card { grid-column: 2 / 4; }
+        .chart-wrap { position: relative; height: 220px; }
+
+        /* ── FINANCEIRO ── */
+        .fin-card { grid-column: 1 / 2; }
+        .fin-row {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border);
+        }
+        .fin-row:last-child { border-bottom: none; }
+        .fin-name { font-size: 12px; color: var(--muted); }
+        .fin-val { font-family: var(--font-head); font-size: 20px; font-weight: 800; }
+
+        /* ── PAÍSES (compacto) ── */
+        .countries-card { grid-column: 2 / 4; }
+        .countries-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+        }
+        .country-pill {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 10px 12px;
+            display: flex; align-items: center; gap: 10px;
+            transition: border-color 0.3s;
+        }
+        .country-pill:hover { border-color: var(--green); }
+        .country-flag { font-size: 22px; flex-shrink: 0; }
+        .country-data { flex: 1; min-width: 0; }
+        .country-name { font-size: 11px; color: var(--muted); }
+        .country-nums { display: flex; gap: 8px; margin-top: 3px; align-items: baseline; }
+        .country-vis { font-family: var(--font-head); font-size: 16px; font-weight: 800; color: #fff; }
+        .country-conv { font-size: 10px; color: var(--green); font-weight: 700; }
+        .country-rev { font-size: 10px; color: var(--yellow); }
+
+        /* ── SPY FEED ── */
+        .spy-card { grid-column: 1 / -1; }
+        .spy-scroll {
+            max-height: 480px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding-right: 4px;
+        }
+        .spy-scroll::-webkit-scrollbar { width: 4px; }
+        .spy-scroll::-webkit-scrollbar-track { background: transparent; }
+        .spy-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+        .spy-item {
+            display: flex; align-items: center; gap: 14px;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 12px 14px;
+            transition: all 0.25s;
+            position: relative;
+            overflow: hidden;
+        }
+        .spy-item:hover { border-color: var(--muted); transform: translateX(3px); }
+
+        /* Checkout highlight */
+        .spy-item.is-checkout {
+            background: rgba(255, 201, 64, 0.06);
+            border-color: var(--yellow);
+            box-shadow: 0 0 16px rgba(255, 201, 64, 0.1);
+        }
+        .spy-item.is-checkout::before {
+            content: '';
+            position: absolute; left: 0; top: 0; bottom: 0;
+            width: 3px;
+            background: var(--yellow);
+        }
+
+        /* Sale highlight */
+        .spy-item.is-sale {
+            background: rgba(0, 229, 160, 0.06);
+            border-color: var(--green);
+            box-shadow: 0 0 20px rgba(0, 229, 160, 0.15);
+        }
+        .spy-item.is-sale::before {
+            content: '';
+            position: absolute; left: 0; top: 0; bottom: 0;
+            width: 3px;
+            background: var(--green);
+        }
+
+        .spy-avatar {
+            font-size: 26px;
+            width: 44px; height: 44px;
+            display: flex; align-items: center; justify-content: center;
+            background: var(--surface);
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+        .spy-main { flex: 1; min-width: 0; }
+        .spy-top { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; flex-wrap: wrap; }
+        .spy-id { font-size: 12px; font-weight: 700; color: var(--red); }
+        .spy-time { font-size: 10px; color: var(--muted); margin-left: auto; }
+
+        .spy-status { font-size: 12px; color: #ccc; margin-bottom: 6px; }
+
+        /* Quiz progress pills */
+        .quiz-progress { display: flex; gap: 4px; align-items: center; }
+        .qp-dot {
+            width: 18px; height: 5px; border-radius: 3px;
+            background: var(--border);
+            transition: background 0.3s;
+        }
+        .qp-dot.done { background: var(--red); }
+        .qp-dot.current { background: var(--yellow); animation: blink 1s infinite; }
+
+        .qp-label { font-size: 10px; color: var(--muted); margin-left: 6px; }
+
+        /* Tags */
+        .tag {
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 2px 8px; border-radius: 20px;
+            font-size: 10px; font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+        .tag-online { background: rgba(0,229,160,0.12); color: var(--green); }
+        .tag-checkout { background: rgba(255,201,64,0.15); color: var(--yellow); }
+        .tag-sale { background: rgba(0,229,160,0.15); color: var(--green); }
+
+        .online-blip {
+            width: 6px; height: 6px; border-radius: 50%; background: var(--green);
+            animation: blink 1.4s infinite;
+        }
+
+        /* ── EMPTY / LOADING ── */
+        .empty { text-align: center; padding: 40px; color: var(--muted); }
+        .spinner {
+            width: 32px; height: 32px; margin: 0 auto 12px;
+            border: 3px solid var(--border);
+            border-top-color: var(--red);
+            border-radius: 50%;
+            animation: spin 0.9s linear infinite;
+        }
         @keyframes spin { to { transform: rotate(360deg); } }
-        
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.3); }
-        ::-webkit-scrollbar-thumb { background: #cc0000; border-radius: 4px; }
+
+        /* ── RESPONSIVE ── */
+        @media (max-width: 1100px) {
+            .kpi-row { grid-template-columns: repeat(3, 1fr); }
+            .chart-card { grid-column: 1 / -1; }
+            .fin-card { grid-column: 1 / 2; }
+            .countries-card { grid-column: 2 / -1; }
+        }
+        @media (max-width: 700px) {
+            .main-grid { grid-template-columns: 1fr; }
+            .kpi-row { grid-column: 1; grid-template-columns: repeat(2,1fr); }
+            .funnel-card, .chart-card, .fin-card, .countries-card, .spy-card { grid-column: 1; }
+            .countries-grid { grid-template-columns: repeat(2,1fr); }
+        }
+
+        /* ── BADGE hottest country ── */
+        .hottest { border-color: var(--red) !important; }
+        .hottest .country-flag::after { content: '🔥'; font-size: 10px; vertical-align: top; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <div class="title">🌎 PROTOCOLO HERCULES - LATAM Dashboard</div>
-            <div class="subtitle">Monitoreo en Tiempo Real - América Latina</div>
-        </div>
+<div class="wrap">
 
-        <div class="online-badge">
-            <div class="online-label">👥 Online Ahora (LATAM)</div>
-            <div class="online-count" id="online-now">0</div>
-        </div>
-
-        <div class="section">
-            <div class="section-title">📊 Métricas Generales LATAM</div>
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-label">Total Accesos</div>
-                    <div class="stat-value" id="total">0</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-label">Inició Quiz</div>
-                    <div class="stat-value" id="started">0</div>
-                    <div class="stat-percent" id="started-pct">0%</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-label">Completó Quiz</div>
-                    <div class="stat-value" id="completed">0</div>
-                    <div class="stat-percent" id="completed-pct">0%</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-label">Vio Resultado</div>
-                    <div class="stat-value" id="result">0</div>
-                    <div class="stat-percent" id="result-pct">0%</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-label">Checkout</div>
-                    <div class="stat-value" id="checkout">0</div>
-                    <div class="stat-percent" id="checkout-pct">0%</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-label">💰 Ventas</div>
-                    <div class="stat-value" id="sales">0</div>
-                    <div class="stat-percent" id="conversion">0%</div>
-                </div>
+    <!-- HEADER -->
+    <div class="header">
+        <div class="logo-area">
+            <div class="logo-icon">⚡</div>
+            <div>
+                <div class="logo-text">Protocolo Hercules</div>
+                <div class="logo-sub">Dashboard LATAM · Tiempo Real</div>
             </div>
         </div>
-
-        <div class="section">
-            <div class="section-title">💰 Financiero (USD)</div>
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-label">Ingresos Brutos</div>
-                    <div class="stat-value" id="revenue" style="font-size: 28px;">$0</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-label">Tasas (15%)</div>
-                    <div class="stat-value" id="fees" style="font-size: 28px; color: #ef4444;">-$0</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-label">Ingresos Netos</div>
-                    <div class="stat-value" id="net" style="font-size: 28px; color: #00ff00;">$0</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-label">Ticket Promedio</div>
-                    <div class="stat-value" id="ticket" style="font-size: 28px;">$0</div>
-                </div>
-            </div>
-        </div>
-
-        <div class="section">
-            <div class="section-title">🌎 Desglose por País</div>
-            <div class="country-row">
-                <div class="country-name">🇲🇽 México</div>
-                <div class="country-stats">
-                    <div>Accesos: <span class="country-value" id="mx-visits">0</span></div>
-                    <div>Ventas: <span class="country-value" id="mx-sales">0</span></div>
-                    <div>Conv: <span class="country-value" id="mx-conv">0%</span></div>
-                    <div>USD: <span class="country-value" id="mx-revenue">$0</span></div>
-                </div>
-            </div>
-            <div class="country-row">
-                <div class="country-name">🇨🇴 Colombia</div>
-                <div class="country-stats">
-                    <div>Accesos: <span class="country-value" id="co-visits">0</span></div>
-                    <div>Ventas: <span class="country-value" id="co-sales">0</span></div>
-                    <div>Conv: <span class="country-value" id="co-conv">0%</span></div>
-                    <div>USD: <span class="country-value" id="co-revenue">$0</span></div>
-                </div>
-            </div>
-            <div class="country-row">
-                <div class="country-name">🇦🇷 Argentina</div>
-                <div class="country-stats">
-                    <div>Accesos: <span class="country-value" id="ar-visits">0</span></div>
-                    <div>Ventas: <span class="country-value" id="ar-sales">0</span></div>
-                    <div>Conv: <span class="country-value" id="ar-conv">0%</span></div>
-                    <div>USD: <span class="country-value" id="ar-revenue">$0</span></div>
-                </div>
-            </div>
-            <div class="country-row">
-                <div class="country-name">🇵🇪 Perú</div>
-                <div class="country-stats">
-                    <div>Accesos: <span class="country-value" id="pe-visits">0</span></div>
-                    <div>Ventas: <span class="country-value" id="pe-sales">0</span></div>
-                    <div>Conv: <span class="country-value" id="pe-conv">0%</span></div>
-                    <div>USD: <span class="country-value" id="pe-revenue">$0</span></div>
-                </div>
-            </div>
-            <div class="country-row">
-                <div class="country-name">🇨🇱 Chile</div>
-                <div class="country-stats">
-                    <div>Accesos: <span class="country-value" id="cl-visits">0</span></div>
-                    <div>Ventas: <span class="country-value" id="cl-sales">0</span></div>
-                    <div>Conv: <span class="country-value" id="cl-conv">0%</span></div>
-                    <div>USD: <span class="country-value" id="cl-revenue">$0</span></div>
-                </div>
-            </div>
-            <div class="country-row">
-                <div class="country-name">🌎 Otros Países</div>
-                <div class="country-stats">
-                    <div>Accesos: <span class="country-value" id="other-visits">0</span></div>
-                    <div>Ventas: <span class="country-value" id="other-sales">0</span></div>
-                    <div>Conv: <span class="country-value" id="other-conv">0%</span></div>
-                    <div>USD: <span class="country-value" id="other-revenue">$0</span></div>
-                </div>
-            </div>
-        </div>
-
-        <div class="section">
-            <div class="section-title">🔴 Espía en Vivo - LATAM</div>
-            <div class="spy-container" id="spy-feed">
-                <div class="empty-state">
-                    <div class="loading-spinner"></div>
-                    <div>Esperando leads de LATAM...</div>
-                </div>
+        <div class="header-right">
+            <div class="live-pill"><div class="live-dot"></div> LIVE</div>
+            <div class="online-hero">
+                <div class="online-num" id="online-now">0</div>
+                <div class="online-label">online ahora</div>
             </div>
         </div>
     </div>
 
-    <script type="module">
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-        import { getFirestore, collection, query, where, onSnapshot, orderBy } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+    <div class="main-grid">
 
-        // ========================================
-        // 🔥 FIREBASE - PROTOCOLO HERCULES
-        // ========================================
-        
-        const app = initializeApp({
-            apiKey: "AIzaSyDk4wUGAeG4uQW7Rmad59AmuzqKiOYB9vk",
-            authDomain: "protocolo-hercules.firebaseapp.com",
-            projectId: "protocolo-hercules",
-            storageBucket: "protocolo-hercules.firebasestorage.app",
-            messagingSenderId: "701694377617",
-            appId: "1:701694377617:web:153290a4cd66ddaae74930"
-        });
+        <!-- KPIs -->
+        <div class="kpi-row">
+            <div class="kpi">
+                <div class="kpi-glow" style="background:var(--red);"></div>
+                <div class="kpi-label">Total Accesos</div>
+                <div class="kpi-val" id="k-total">0</div>
+                <div class="kpi-pct yellow" id="k-online-pct">0 online</div>
+            </div>
+            <div class="kpi">
+                <div class="kpi-glow" style="background:#4d9fff;"></div>
+                <div class="kpi-label">Inició Quiz</div>
+                <div class="kpi-val" id="k-started">0</div>
+                <div class="kpi-pct" id="k-started-pct">0%</div>
+            </div>
+            <div class="kpi">
+                <div class="kpi-glow" style="background:var(--yellow);"></div>
+                <div class="kpi-label">Completó Quiz</div>
+                <div class="kpi-val" id="k-completed">0</div>
+                <div class="kpi-pct" id="k-completed-pct">0%</div>
+            </div>
+            <div class="kpi">
+                <div class="kpi-glow" style="background:var(--green);"></div>
+                <div class="kpi-label">Vio Resultado</div>
+                <div class="kpi-val" id="k-result">0</div>
+                <div class="kpi-pct" id="k-result-pct">0%</div>
+            </div>
+            <div class="kpi">
+                <div class="kpi-glow" style="background:var(--yellow);"></div>
+                <div class="kpi-label">Checkout</div>
+                <div class="kpi-val" id="k-checkout">0</div>
+                <div class="kpi-pct" id="k-checkout-pct">0%</div>
+            </div>
+            <div class="kpi">
+                <div class="kpi-glow" style="background:var(--green);"></div>
+                <div class="kpi-label">💰 Ventas</div>
+                <div class="kpi-val" id="k-sales">0</div>
+                <div class="kpi-pct green" id="k-conv">0%</div>
+            </div>
+        </div>
 
-        const db = getFirestore(app);
-        let allSessions = [];
-        let allSales = [];
+        <!-- FUNNEL DE ABANDONO -->
+        <div class="card funnel-card">
+            <div class="card-title"><div class="dot" style="background:var(--red);"></div> Dónde Abandonan</div>
+            <div id="funnel-steps"></div>
+        </div>
 
-        // Query sessions LATAM
-        const sessionsQuery = query(
-            collection(db, 'sessions'),
-            orderBy('enteredAt', 'desc')
-        );
+        <!-- GRÁFICO DE ENTRADAS POR HORA -->
+        <div class="card chart-card">
+            <div class="card-title"><div class="dot" style="background:var(--blue);"></div> Entradas al Funil — Últimas 24h</div>
+            <div class="chart-wrap">
+                <canvas id="hourly-chart"></canvas>
+            </div>
+        </div>
 
-        const salesQuery = query(
-            collection(db, 'sales'),
-            orderBy('createdAt', 'desc')
-        );
+        <!-- FINANCEIRO -->
+        <div class="card fin-card">
+            <div class="card-title"><div class="dot" style="background:var(--green);"></div> Financiero (USD)</div>
+            <div class="fin-row">
+                <span class="fin-name">Ingresos Brutos</span>
+                <span class="fin-val" id="f-gross">$0</span>
+            </div>
+            <div class="fin-row">
+                <span class="fin-name">Tasas (15%)</span>
+                <span class="fin-val" style="color:var(--red)" id="f-fees">−$0</span>
+            </div>
+            <div class="fin-row">
+                <span class="fin-name">Neto</span>
+                <span class="fin-val" style="color:var(--green)" id="f-net">$0</span>
+            </div>
+            <div class="fin-row" style="border:none">
+                <span class="fin-name">Ticket Promedio</span>
+                <span class="fin-val" style="color:var(--yellow)" id="f-ticket">$0</span>
+            </div>
+        </div>
 
-        onSnapshot(sessionsQuery, (snapshot) => {
-            allSessions = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))
-                .filter(s => s.source === 'tiktok_latam' || s.source === 'latam');
-            updateStats();
-            updateSpyFeed();
-        });
+        <!-- PAÍSES COMPACTO -->
+        <div class="card countries-card">
+            <div class="card-title"><div class="dot" style="background:var(--yellow);"></div> Accesos por País</div>
+            <div class="countries-grid" id="countries-grid"></div>
+        </div>
 
-        onSnapshot(salesQuery, (snapshot) => {
-            allSales = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))
-                .filter(s => (s.source === 'latam' || s.source === 'tiktok_latam') && s.isPaid === true);
-            updateSalesStats();
-        });
+        <!-- SPY FEED -->
+        <div class="card spy-card">
+            <div class="card-title">
+                <div class="dot" style="background:var(--red);"></div>
+                Espía en Vivo
+                <span style="margin-left:auto;font-size:10px;color:var(--muted);" id="spy-count">0 leads</span>
+            </div>
+            <div class="spy-scroll" id="spy-feed">
+                <div class="empty"><div class="spinner"></div>Esperando leads de LATAM...</div>
+            </div>
+        </div>
 
-        function isOnline(lastActivity) {
-            if (!lastActivity) return false;
-            const now = Date.now();
-            const lastTime = lastActivity.toMillis ? lastActivity.toMillis() : lastActivity;
-            return (now - lastTime) < 300000; // 5 min
-        }
+    </div>
+</div>
 
-        function updateStats() {
-            const total = allSessions.length;
-            const started = allSessions.filter(s => s.events?.quiz_started).length;
-            const completed = allSessions.filter(s => s.events?.quiz_completed).length;
-            const result = allSessions.filter(s => s.events?.result_shown).length;
-            const checkout = allSessions.filter(s => s.conversion?.clickedCheckout).length;
-            const online = allSessions.filter(s => isOnline(s.lastActivity)).length;
-            
-            document.getElementById('online-now').textContent = online;
-            document.getElementById('total').textContent = total;
-            document.getElementById('started').textContent = started;
-            document.getElementById('started-pct').textContent = total > 0 ? Math.round((started / total) * 100) + '%' : '0%';
-            document.getElementById('completed').textContent = completed;
-            document.getElementById('completed-pct').textContent = total > 0 ? Math.round((completed / total) * 100) + '%' : '0%';
-            document.getElementById('result').textContent = result;
-            document.getElementById('result-pct').textContent = total > 0 ? Math.round((result / total) * 100) + '%' : '0%';
-            document.getElementById('checkout').textContent = checkout;
-            document.getElementById('checkout-pct').textContent = total > 0 ? Math.round((checkout / total) * 100) + '%' : '0%';
-            
-            // Por país
-            const countries = {
-                MX: { visits: 0, sales: 0, revenue: 0 },
-                CO: { visits: 0, sales: 0, revenue: 0 },
-                AR: { visits: 0, sales: 0, revenue: 0 },
-                PE: { visits: 0, sales: 0, revenue: 0 },
-                CL: { visits: 0, sales: 0, revenue: 0 },
-                OTHER: { visits: 0, sales: 0, revenue: 0 }
-            };
-            
-            allSessions.forEach(s => {
-                const country = s.country || 'OTHER';
-                if (countries[country]) {
-                    countries[country].visits++;
-                } else {
-                    countries.OTHER.visits++;
-                }
-            });
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+import { getFirestore, collection, query, orderBy, onSnapshot } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
-            allSales.forEach(s => {
-                const country = s.country || 'OTHER';
-                const amount = s.amount || 0;
-                if (countries[country]) {
-                    countries[country].sales++;
-                    countries[country].revenue += amount;
-                } else {
-                    countries.OTHER.sales++;
-                    countries.OTHER.revenue += amount;
-                }
-            });
-            
-            Object.keys(countries).forEach(code => {
-                const prefix = code.toLowerCase();
-                const data = countries[code];
-                const conv = data.visits > 0 ? ((data.sales / data.visits) * 100).toFixed(1) : '0.0';
-                
-                document.getElementById(`${prefix}-visits`).textContent = data.visits;
-                document.getElementById(`${prefix}-sales`).textContent = data.sales;
-                document.getElementById(`${prefix}-conv`).textContent = conv + '%';
-                document.getElementById(`${prefix}-revenue`).textContent = '$' + data.revenue.toFixed(2);
-            });
-        }
+const app = initializeApp({
+    apiKey: "AIzaSyDk4wUGAeG4uQW7Rmad59AmuzqKiOYB9vk",
+    authDomain: "protocolo-hercules.firebaseapp.com",
+    projectId: "protocolo-hercules",
+    storageBucket: "protocolo-hercules.firebasestorage.app",
+    messagingSenderId: "701694377617",
+    appId: "1:701694377617:web:153290a4cd66ddaae74930"
+});
 
-        function updateSalesStats() {
-            const totalSales = allSales.length;
-            const revenue = allSales.reduce((sum, s) => sum + (s.amount || 0), 0);
-            const fees = revenue * 0.15;
-            const net = revenue - fees;
-            const ticket = totalSales > 0 ? net / totalSales : 0;
-            
-            const totalVisits = allSessions.length || 1;
-            const conversion = (totalSales / totalVisits) * 100;
-            
-            document.getElementById('sales').textContent = totalSales;
-            document.getElementById('conversion').textContent = conversion.toFixed(1) + '%';
-            document.getElementById('revenue').textContent = '$' + revenue.toFixed(2);
-            document.getElementById('fees').textContent = '-$' + fees.toFixed(2);
-            document.getElementById('net').textContent = '$' + net.toFixed(2);
-            document.getElementById('ticket').textContent = '$' + ticket.toFixed(2);
-        }
+const db = getFirestore(app);
+let sessions = [], sales = [];
 
-        function updateSpyFeed() {
-            const container = document.getElementById('spy-feed');
-            
-            if (allSessions.length === 0) {
-                container.innerHTML = '<div class="empty-state"><div class="loading-spinner"></div><div>Esperando leads de LATAM...</div></div>';
-                return;
+// ─── CHART SETUP ────────────────────────────────────────────
+const ctx = document.getElementById('hourly-chart').getContext('2d');
+const labels = [];
+const now = new Date();
+for (let i = 23; i >= 0; i--) {
+    const h = new Date(now - i * 3600000);
+    labels.push(h.getHours().toString().padStart(2,'0') + 'h');
+}
+
+const hourlyChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+        labels,
+        datasets: [{
+            label: 'Entradas',
+            data: new Array(24).fill(0),
+            backgroundColor: 'rgba(255, 45, 78, 0.5)',
+            borderColor: '#ff2d4e',
+            borderWidth: 1,
+            borderRadius: 4,
+            borderSkipped: false,
+        }, {
+            label: 'Checkouts',
+            data: new Array(24).fill(0),
+            backgroundColor: 'rgba(255, 201, 64, 0.4)',
+            borderColor: '#ffc940',
+            borderWidth: 1,
+            borderRadius: 4,
+            borderSkipped: false,
+        }]
+    },
+    options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: {
+            legend: { labels: { color: '#5a5a72', font: { family: 'Space Mono', size: 10 }, boxWidth: 12, padding: 12 } },
+            tooltip: {
+                backgroundColor: '#14141a',
+                borderColor: '#1e1e28', borderWidth: 1,
+                titleColor: '#e8e8f0', bodyColor: '#5a5a72',
+                titleFont: { family: 'Space Mono', size: 11 },
+                bodyFont: { family: 'Space Mono', size: 10 },
             }
-            
-            const sorted = [...allSessions].sort((a, b) => {
-                const timeA = a.lastActivity?.toMillis ? a.lastActivity.toMillis() : 0;
-                const timeB = b.lastActivity?.toMillis ? b.lastActivity.toMillis() : 0;
-                return timeB - timeA;
-            }).slice(0, 30);
-            
-            container.innerHTML = sorted.map(s => {
-                const flag = getFlag(s.country);
-                const sid = (s.sessionId || s.id).substr(-6).toUpperCase();
-                const status = getStatus(s);
-                const online = isOnline(s.lastActivity);
-                const sale = allSales.find(sale => sale.sessionId === s.sessionId);
-                const isCheckout = s.conversion?.clickedCheckout && !sale;
-                
-                return `
-                    <div class="spy-item">
-                        <div class="spy-avatar">${flag}</div>
-                        <div class="spy-content">
-                            <div class="spy-header">
-                                <div class="spy-id">Lead #${sid}</div>
-                                <div class="spy-time">${formatTimeAgo(s.enteredAt)}</div>
-                            </div>
-                            <div class="spy-status">${status}</div>
-                            <div class="spy-badges">
-                                ${online && !sale ? '<div class="online-dot"></div>' : ''}
-                                ${isCheckout ? '<div class="checkout-badge">CHECKOUT</div>' : ''}
-                                ${sale ? '<div class="sale-badge">$' + (sale.amount || 0).toFixed(2) + '</div>' : ''}
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }).join('');
+        },
+        scales: {
+            x: {
+                grid: { color: 'rgba(255,255,255,0.03)' },
+                ticks: { color: '#5a5a72', font: { family: 'Space Mono', size: 9 }, maxRotation: 0, maxTicksLimit: 12 }
+            },
+            y: {
+                grid: { color: 'rgba(255,255,255,0.04)' },
+                ticks: { color: '#5a5a72', font: { family: 'Space Mono', size: 9 }, stepSize: 1 },
+                beginAtZero: true
+            }
         }
+    }
+});
 
-        function getFlag(country) {
-            const flags = {
-                'MX': '🇲🇽', 'CO': '🇨🇴', 'AR': '🇦🇷',
-                'PE': '🇵🇪', 'CL': '🇨🇱', 'VE': '🇻🇪',
-                'EC': '🇪🇨', 'UY': '🇺🇾', 'PY': '🇵🇾',
-                'BO': '🇧🇴', 'GT': '🇬🇹', 'HN': '🇭🇳',
-                'SV': '🇸🇻', 'NI': '🇳🇮', 'CR': '🇨🇷',
-                'PA': '🇵🇦', 'DO': '🇩🇴', 'CU': '🇨🇺'
-            };
-            return flags[country] || '🌎';
+// ─── HELPERS ────────────────────────────────────────────────
+const isOnline  = s => s.lastActivity && (Date.now() - ms(s.lastActivity)) < 300000;
+const ms        = t => t?.toMillis ? t.toMillis() : (t || 0);
+const pct       = (a, b) => b > 0 ? ((a / b) * 100).toFixed(1) + '%' : '0%';
+const fmt$      = v => '$' + v.toFixed(2);
+const dropClass = p => p > 40 ? 'drop-bad' : p > 20 ? 'drop-ok' : 'drop-good';
+
+function timeAgo(ts) {
+    if (!ts) return '—';
+    const s = Math.floor((Date.now() - ms(ts)) / 1000);
+    if (s < 60) return `${s}s`;
+    if (s < 3600) return `${Math.floor(s/60)}m`;
+    return `${Math.floor(s/3600)}h`;
+}
+
+function getFlag(c) {
+    const f = { MX:'🇲🇽',CO:'🇨🇴',AR:'🇦🇷',PE:'🇵🇪',CL:'🇨🇱',VE:'🇻🇪',EC:'🇪🇨',UY:'🇺🇾',PY:'🇵🇾',BO:'🇧🇴',GT:'🇬🇹',HN:'🇭🇳',SV:'🇸🇻',NI:'🇳🇮',CR:'🇨🇷',PA:'🇵🇦',DO:'🇩🇴',CU:'🇨🇺',BR:'🇧🇷' };
+    return f[c] || '🌎';
+}
+
+function getStatus(s) {
+    const ev = s.events || {};
+    if (ev.checkout) return '💳 Clicó en Checkout';
+    if (ev.result_shown) return '🎉 Vio su resultado — esperando oferta';
+    if (ev.quiz_completed) return '✅ Completó las 8 preguntas';
+    if (ev.quiz_started) return '📝 Respondiendo quiz...';
+    return '📱 Viendo página de inicio';
+}
+
+// Quiz progress bar
+function quizProgressHTML(s) {
+    const ev = s.events || {};
+    if (!ev.quiz_started) return '';
+    const done = Math.min(s.quizProgress || 0, 8);
+    const completed = !!ev.quiz_completed;
+    let dots = '';
+    for (let i = 0; i < 8; i++) {
+        let cls = 'qp-dot';
+        if (i < done) cls += ' done';
+        else if (i === done && !completed) cls += ' current';
+        dots += `<div class="${cls}"></div>`;
+    }
+    const label = completed ? '8/8 ✓' : `${done}/8`;
+    return `<div class="quiz-progress">${dots}<span class="qp-label">${label}</span></div>`;
+}
+
+// ─── UPDATE CHART ────────────────────────────────────────────
+function updateChart() {
+    const entradas = new Array(24).fill(0);
+    const checkouts = new Array(24).fill(0);
+    const cutoff = Date.now() - 24 * 3600000;
+
+    sessions.forEach(s => {
+        const t = ms(s.enteredAt);
+        if (t >= cutoff) {
+            const hoursAgo = Math.floor((Date.now() - t) / 3600000);
+            const idx = 23 - hoursAgo;
+            if (idx >= 0 && idx < 24) entradas[idx]++;
         }
-
-        function getStatus(s) {
-            const events = s.events || {};
-            if (events.checkout) return '💳 Clicó en CHECKOUT';
-            if (events.result_shown) return '🎉 Vio su resultado';
-            if (events.quiz_completed) return '✅ Completó quiz (' + (s.quizProgress || 0) + '/8)';
-            if (events.quiz_started) return '📝 Respondiendo quiz...';
-            return '📱 Viendo página';
+        if (s.events?.checkout) {
+            const ct = ms(s.events.checkout);
+            if (ct >= cutoff) {
+                const hoursAgo = Math.floor((Date.now() - ct) / 3600000);
+                const idx = 23 - hoursAgo;
+                if (idx >= 0 && idx < 24) checkouts[idx]++;
+            }
         }
+    });
 
-        function formatTimeAgo(timestamp) {
-            if (!timestamp) return 'hace un momento';
-            const time = timestamp.toMillis ? timestamp.toMillis() : timestamp;
-            const seconds = Math.floor((Date.now() - time) / 1000);
-            
-            if (seconds < 60) return 'hace ' + seconds + 's';
-            const minutes = Math.floor(seconds / 60);
-            if (minutes < 60) return 'hace ' + minutes + 'm';
-            const hours = Math.floor(minutes / 60);
-            return 'hace ' + hours + 'h';
+    hourlyChart.data.datasets[0].data = entradas;
+    hourlyChart.data.datasets[1].data = checkouts;
+    hourlyChart.update('none');
+}
+
+// ─── FUNNEL ────────────────────────────────────────────────
+function updateFunnel(data) {
+    const steps = [
+        { name: '1. Entró al funil',      val: data.total,     color: '#4d9fff' },
+        { name: '2. Inició quiz',          val: data.started,   color: '#9b8fff' },
+        { name: '3. Completó quiz (8/8)',  val: data.completed, color: '#ffc940' },
+        { name: '4. Vio resultado',        val: data.result,    color: '#ff8c40' },
+        { name: '5. Clicó en checkout',    val: data.checkout,  color: '#ff2d4e' },
+        { name: '6. Venta confirmada',     val: data.salesN,    color: '#00e5a0' },
+    ];
+
+    const max = data.total || 1;
+    let html = '';
+    steps.forEach((step, i) => {
+        const barW = Math.round((step.val / max) * 100);
+        const prevVal = i > 0 ? steps[i-1].val : null;
+        let dropBadge = '';
+        if (prevVal !== null && prevVal > 0) {
+            const lost = prevVal - step.val;
+            const lostPct = Math.round((lost / prevVal) * 100);
+            if (lostPct > 0) {
+                dropBadge = `<span class="funnel-drop ${dropClass(lostPct)}">−${lostPct}%</span>`;
+            }
         }
+        html += `
+        <div class="funnel-step">
+            <div class="funnel-step-num">${i+1}</div>
+            <div class="funnel-step-info">
+                <div class="funnel-step-name">${step.name} ${dropBadge}</div>
+                <div class="funnel-bar-track">
+                    <div class="funnel-bar-fill" style="width:${barW}%;background:${step.color};"></div>
+                </div>
+            </div>
+            <div class="funnel-right">
+                <div class="funnel-count">${step.val}</div>
+                <div class="funnel-pct">${pct(step.val, max)}</div>
+            </div>
+        </div>`;
+    });
+    document.getElementById('funnel-steps').innerHTML = html;
+}
 
-        // Auto refresh cada 10s
-        setInterval(() => {
-            updateStats();
-            updateSalesStats();
-        }, 10000);
-    </script>
+// ─── PAÍSES ────────────────────────────────────────────────
+function updateCountries(countries) {
+    const list = ['MX','CO','AR','PE','CL','OTHER'];
+    const maxVisits = Math.max(...list.map(c => countries[c]?.visits || 0), 1);
+
+    let html = list.map(code => {
+        const d = countries[code] || { visits:0, sales:0, revenue:0 };
+        const conv = d.visits > 0 ? ((d.sales/d.visits)*100).toFixed(1)+'%' : '0%';
+        const flag = code === 'OTHER' ? '🌎' : getFlag(code);
+        const name = { MX:'México',CO:'Colombia',AR:'Argentina',PE:'Perú',CL:'Chile',OTHER:'Otros' }[code];
+        const isHot = d.visits === maxVisits && d.visits > 0;
+        return `
+        <div class="country-pill${isHot?' hottest':''}">
+            <div class="country-flag">${flag}</div>
+            <div class="country-data">
+                <div class="country-name">${name}</div>
+                <div class="country-nums">
+                    <span class="country-vis">${d.visits}</span>
+                    <span class="country-conv">${conv}</span>
+                    <span class="country-rev">${fmt$(d.revenue)}</span>
+                </div>
+            </div>
+        </div>`;
+    }).join('');
+    document.getElementById('countries-grid').innerHTML = html;
+}
+
+// ─── SPY FEED ────────────────────────────────────────────────
+function updateSpy() {
+    const container = document.getElementById('spy-feed');
+    if (sessions.length === 0) {
+        container.innerHTML = '<div class="empty"><div class="spinner"></div>Esperando leads de LATAM...</div>';
+        return;
+    }
+
+    const sorted = [...sessions].sort((a,b) => ms(b.lastActivity) - ms(a.lastActivity)).slice(0, 40);
+    document.getElementById('spy-count').textContent = sessions.length + ' leads';
+
+    container.innerHTML = sorted.map(s => {
+        const sale  = sales.find(x => x.sessionId === s.sessionId);
+        const isChk = s.events?.checkout && !sale;
+        const isSale = !!sale;
+        const online = isOnline(s);
+        const sid = (s.sessionId || s.id).slice(-6).toUpperCase();
+
+        let cls = 'spy-item';
+        if (isSale) cls += ' is-sale';
+        else if (isChk) cls += ' is-checkout';
+
+        const tags = [];
+        if (isSale)  tags.push(`<span class="tag tag-sale">💰 ${fmt$(sale.amount || 0)}</span>`);
+        if (isChk)   tags.push(`<span class="tag tag-checkout">⚡ CHECKOUT</span>`);
+        if (online && !isSale) tags.push(`<span class="tag tag-online"><span class="online-blip"></span> ONLINE</span>`);
+
+        return `
+        <div class="${cls}">
+            <div class="spy-avatar">${getFlag(s.country)}</div>
+            <div class="spy-main">
+                <div class="spy-top">
+                    <span class="spy-id">#${sid}</span>
+                    ${tags.join('')}
+                    <span class="spy-time">${timeAgo(s.lastActivity)}</span>
+                </div>
+                <div class="spy-status">${getStatus(s)}</div>
+                ${quizProgressHTML(s)}
+            </div>
+        </div>`;
+    }).join('');
+}
+
+// ─── MAIN UPDATE ────────────────────────────────────────────
+function update() {
+    const total     = sessions.length;
+    const started   = sessions.filter(s => s.events?.quiz_started).length;
+    const completed = sessions.filter(s => s.events?.quiz_completed).length;
+    const result    = sessions.filter(s => s.events?.result_shown).length;
+    const checkout  = sessions.filter(s => s.events?.checkout).length;
+    const salesN    = sales.length;
+    const online    = sessions.filter(s => isOnline(s)).length;
+
+    // KPIs
+    document.getElementById('online-now').textContent    = online;
+    document.getElementById('k-total').textContent       = total;
+    document.getElementById('k-online-pct').textContent  = online + ' online';
+    document.getElementById('k-started').textContent     = started;
+    document.getElementById('k-started-pct').textContent = pct(started, total);
+    document.getElementById('k-completed').textContent   = completed;
+    document.getElementById('k-completed-pct').textContent = pct(completed, total);
+    document.getElementById('k-result').textContent      = result;
+    document.getElementById('k-result-pct').textContent  = pct(result, total);
+    document.getElementById('k-checkout').textContent    = checkout;
+    document.getElementById('k-checkout-pct').textContent= pct(checkout, total);
+    document.getElementById('k-sales').textContent       = salesN;
+
+    const conv = total > 0 ? ((salesN/total)*100).toFixed(2)+'%' : '0%';
+    document.getElementById('k-conv').textContent = conv;
+
+    // Cores de conversão
+    const startedPctEl = document.getElementById('k-started-pct');
+    const sp = parseFloat(pct(started,total));
+    startedPctEl.className = 'kpi-pct ' + (sp > 70 ? 'green' : sp > 40 ? 'yellow' : 'red');
+
+    // Financeiro
+    const revenue = sales.reduce((s, x) => s + (x.amount || 0), 0);
+    const fees    = revenue * 0.15;
+    document.getElementById('f-gross').textContent  = fmt$(revenue);
+    document.getElementById('f-fees').textContent   = '−'+fmt$(fees);
+    document.getElementById('f-net').textContent    = fmt$(revenue - fees);
+    document.getElementById('f-ticket').textContent = fmt$(salesN > 0 ? (revenue-fees)/salesN : 0);
+
+    // Países
+    const countries = {};
+    ['MX','CO','AR','PE','CL','OTHER'].forEach(c => countries[c] = { visits:0, sales:0, revenue:0 });
+    sessions.forEach(s => {
+        const c = countries[s.country] ? s.country : 'OTHER';
+        countries[c].visits++;
+    });
+    sales.forEach(s => {
+        const c = countries[s.country] ? s.country : 'OTHER';
+        countries[c].sales++;
+        countries[c].revenue += s.amount || 0;
+    });
+
+    updateFunnel({ total, started, completed, result, checkout, salesN });
+    updateCountries(countries);
+    updateChart();
+    updateSpy();
+}
+
+// ─── FIREBASE LISTENERS ─────────────────────────────────────
+onSnapshot(
+    query(collection(db, 'sessions'), orderBy('enteredAt', 'desc')),
+    snap => {
+        sessions = snap.docs.map(d => ({ id: d.id, ...d.data() }))
+            .filter(s => s.source === 'tiktok_latam' || s.source === 'latam');
+        update();
+    }
+);
+
+onSnapshot(
+    query(collection(db, 'sales'), orderBy('createdAt', 'desc')),
+    snap => {
+        sales = snap.docs.map(d => ({ id: d.id, ...d.data() }))
+            .filter(s => (s.source === 'latam' || s.source === 'tiktok_latam') && s.isPaid === true);
+        update();
+    }
+);
+
+// Atualiza gráfico a cada 60s sem esperar firebase
+setInterval(updateChart, 60000);
+</script>
 </body>
 </html>
